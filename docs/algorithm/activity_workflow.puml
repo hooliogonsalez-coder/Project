@@ -1,0 +1,52 @@
+@startuml
+skinparam backgroundColor #F8F9FA
+skinparam activityBackgroundColor #FFF8E1
+skinparam activityBorderColor #FFA000
+skinparam activityStartColor #4CAF50
+skinparam activityEndColor #F44336
+
+title Activity Diagram: Full Workflow
+
+start
+:Select camera;
+note right: Optional
+
+:Click "RECOGNIZE FACE";
+
+if (Face recognized?) then (yes)
+    :Show employee card;
+    :Select cabinet in table;
+    
+    if (Select action) then (Issue key)
+        :Check key availability;
+        
+        if (Key available?) then (yes)
+            :Issue key;
+            :Update status in DB;
+            :event_log.log("Key issued");
+        else (no)
+            :event_log.log("Key already issued");
+        endif
+        
+    else (Return key)
+        :Check key status;
+        
+        if (Key issued?) then (yes)
+            :Return key;
+            :Update status in DB;
+            :event_log.log("Key returned");
+        else (no)
+            :event_log.log("Key is available");
+        endif
+        
+    endif
+    
+else (no)
+    :event_log.log("Face not recognized");
+endif
+
+:Update keys table;
+
+stop
+
+@enduml

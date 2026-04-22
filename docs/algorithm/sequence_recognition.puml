@@ -1,0 +1,85 @@
+@startuml
+skinparam backgroundColor #F8F9FA
+skinparam sequenceParticipantFontName Consolas
+skinparam participantBackgroundColor #E3F2FD
+skinparam actorBackgroundColor #FFF3E0
+skinparam databaseBackgroundColor #E8F5E9
+
+actor "User" as User
+participant "MainWindow" as MW
+participant "CameraService" as Cam
+participant "FaceService" as Face
+participant "DataStore" as Store
+participant "Database" as DB
+participant "Employee" as Emp
+
+title Sequence Diagram: Face Recognition
+
+== Camera Initialization ==
+
+User -> MW: Click "Select Camera"
+MW -> Cam: get_available_cameras()
+Cam --> MW: ["0", "1", ...]
+
+MW -> Cam: init_camera(index)
+Cam --> MW: True/False
+
+== Video Stream ==
+
+loop every 33ms
+    Cam -> Cam: read_frame()
+    Cam --> MW: frame
+    MW -> MW: video_panel.update_frame(frame)
+end
+
+== Face Recognition ==
+
+User -> MW: Click "RECOGNIZE FACE"
+MW -> Cam: read_frame()
+Cam --> MW: frame
+
+MW -> Face: recognize(frame)
+Face -> Face: _init_mediapipe()
+
+alt Frame received
+    Face -> Face: format conversion
+    Face -> Face: face_mesh.process(image)
+    
+    alt Face detected
+        Face -> Face: _extract_face_embedding(landmarks)
+        Face -> Face: face_embedding.tobytes()
+        
+        Face -> Store: get_employee_by_face(encoding, threshold)
+        Store -> DB: get_employee_by_face(encoding, threshold)
+        
+        DB -> DB: cosine similarity calculation
+        loop for each employee
+            DB -> DB: cosine_similarity(input, stored)
+        end
+        
+        alt Face recognized
+            DB --> Store: Employee
+            Store --> Face: Employee
+            Face -> Face: _current_employee = employee
+            Face --> MW: Employee
+            MW -> MW: employee_card.update_employee(employee)
+            MW -> MW: event_log.log("Recognized: ...")
+            MW --> User: Show employee card
+        else Face not recognized
+            DB --> Store: None
+            Store --> Face: None
+            Face --> MW: None
+            MW --> User: Message "Face not recognized"
+        end
+        
+    else Face not detected
+        Face --> MW: None
+        MW --> User: Message "Face not detected"
+    end
+    
+else Camera unavailable
+    Cam --> MW: None
+    MW --> User: Message "Camera unavailable"
+end
+
+@enduml

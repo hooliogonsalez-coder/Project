@@ -1,0 +1,87 @@
+@startuml
+skinparam backgroundColor #F8F9FA
+skinparam sequenceParticipantFontName Consolas
+skinparam participantBackgroundColor #E3F2FD
+skinparam actorBackgroundColor #FFF3E0
+
+actor "User" as User
+participant "MainWindow" as MW
+participant "FaceService" as Face
+participant "KeysTable" as Table
+participant "KeyService" as KeySvc
+participant "DataStore" as Store
+participant "Database" as DB
+participant "Employee" as Emp
+
+title Sequence Diagram: Key Issue and Return
+
+== Key Issue ==
+
+User -> MW: Click "ISSUE KEY"
+MW -> Face: current_employee
+alt Employee recognized
+    Face --> MW: Employee
+    MW -> Table: get_selected_cabinet()
+    Table --> MW: cabinet
+    
+    alt Cabinet selected
+        MW -> KeySvc: issue_key(cabinet, employee)
+        KeySvc -> Store: get_key(cabinet)
+        Store -> DB: get_key(cabinet)
+        DB --> Store: Key
+        Store --> KeySvc: Key
+        
+        alt Key available
+            KeySvc -> Store: issue_key(cabinet, employee)
+            Store -> DB: update_key(cabinet, ISSUED, holder_id, holder_name)
+            DB --> Store: True
+            Store --> KeySvc: True
+            KeySvc --> MW: (True, "Key issued")
+            MW -> MW: keys_table.update_keys()
+            MW -> MW: event_log.log()
+            MW --> User: Success
+        else Key already issued
+            KeySvc --> MW: (False, "Key already issued")
+            MW --> User: Error
+        end
+        
+    else Cabinet not selected
+        MW --> User: Error "Select a key"
+    end
+    
+else Employee not recognized
+    MW --> User: Error "Employee not recognized"
+end
+
+== Key Return ==
+
+User -> MW: Click "RETURN KEY"
+MW -> Table: get_selected_cabinet()
+Table --> MW: cabinet
+
+alt Cabinet selected
+    MW -> KeySvc: return_key(cabinet)
+    KeySvc -> Store: get_key(cabinet)
+    Store -> DB: get_key(cabinet)
+    DB --> Store: Key
+    Store --> KeySvc: Key
+    
+    alt Key issued
+        KeySvc -> Store: return_key(cabinet)
+        Store -> DB: update_key(cabinet, AVAILABLE)
+        DB --> Store: True
+        Store --> KeySvc: True
+        KeySvc --> MW: (True, "Key returned")
+        MW -> MW: keys_table.update_keys()
+        MW -> MW: event_log.log()
+        MW --> User: Success
+    else Key already available
+        KeySvc --> MW: (False, "Key already available")
+        MW --> User: Error
+    end
+    
+else Cabinet not selected
+    MW --> User: Error "Select a key"
+end
+
+@enduml
