@@ -1,0 +1,8 @@
+2026-04-28 17:55:31.453 | WARNING  | app.core.sync_manager:startup_sync:32 - Нет связи с сервером, работаем офлайн: [Errno 11001] getaddrinfo failed
+2026-04-28 17:55:31.455 | INFO     | __main__:init_application:50 - Синхронизация завершена
+2026-04-28 17:56:41.204 | WARNING  | app.core.sync_manager:startup_sync:32 - Нет связи с сервером, работаем офлайн: [Errno 11001] getaddrinfo failed
+2026-04-28 17:56:41.205 | INFO     | __main__:init_application:50 - Синхронизация завершена
+2026-04-28 18:00:30.278 | WARNING  | app.core.sync_manager:startup_sync:32 - Нет связи с сервером, работаем офлайн: [Errno 11001] getaddrinfo failed
+2026-04-28 18:00:30.280 | INFO     | __main__:init_application:50 - Синхронизация завершена
+2026-04-28 18:01:24.595 | WARNING  | app.core.sync_manager:startup_sync:32 - Нет связи с сервером, работаем офлайн: [Errno 11001] getaddrinfo failed
+2026-04-28 18:01:24.597 | INFO     | __main__:init_application:50 - Синхронизация завершена

@@ -1,0 +1,28 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: biometric_db
+      POSTGRES_USER: biometric
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://biometric:${DB_PASSWORD:-password}@db/biometric_db
+      API_KEY: ${API_KEY:-your-secret-api-key}
+    depends_on:
+      - db
+
+volumes:
+  pgdata:
